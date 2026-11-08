@@ -1,0 +1,62 @@
+package dev.venice.ac.gui;
+
+import dev.venice.ac.Module;
+import dev.venice.ac.ModuleManager;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
+
+public class MenuScreen extends Screen {
+    private static final int W = 150;
+    private static final int ROW = 14;
+
+    public MenuScreen() {
+        super(Text.literal("ac"));
+    }
+
+    @Override
+    public boolean shouldPause() { return false; }
+
+    private int left() { return width / 2 - W / 2; }
+    private int top() { return height / 2 - (ModuleManager.MODULES.size() * ROW) / 2 - 12; }
+
+    @Override
+    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        int l = left();
+        int t = top();
+        int h = ModuleManager.MODULES.size() * ROW + 26;
+
+        ctx.fill(l, t, l + W, t + h, 0xC0101010);
+        ctx.drawTextWithShadow(textRenderer, "ac", l + 6, t + 5, 0xFF55FFFF);
+
+        int y = t + 18;
+        for (Module m : ModuleManager.MODULES) {
+            boolean hover = mouseX >= l && mouseX <= l + W && mouseY >= y && mouseY < y + ROW;
+            if (hover) ctx.fill(l + 2, y, l + W - 2, y + ROW - 1, 0x40FFFFFF);
+            ctx.drawTextWithShadow(textRenderer,
+                (m.enabled ? "[x] " : "[ ] ") + m.name,
+                l + 6, y + 3, m.enabled ? 0xFF55FF55 : 0xFF808080);
+            y += ROW;
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+        int l = left();
+        int y = top() + 18;
+        for (Module m : ModuleManager.MODULES) {
+            if (mouseX >= l && mouseX <= l + W && mouseY >= y && mouseY < y + ROW) {
+                m.toggle();
+                return true;
+            }
+            y += ROW;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public void close() {
+        client.setScreen(null);
+    }
+}
